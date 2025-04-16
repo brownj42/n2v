@@ -6,7 +6,6 @@ Functions associated with mrks inversion
 
 import numpy as np
 from opt_einsum import contract
-import psi4
 import time
 
 class MRKS():
@@ -41,6 +40,9 @@ class MRKS():
         because the calculation of this takes most time.
     """
     vxc_hole_WF = None
+    def __init__(self):
+        import psi4
+        self.psi4 = psi4
 
     def _vxc_hole_quadrature(self, grid_info=None, atol=1e-5, atol1=1e-4, Vpot=None):
         """
@@ -263,15 +265,15 @@ class MRKS():
         Nalpha = self.nalpha
 
         # Preparing DFT spherical grid
-        functional = psi4.driver.dft.build_superfunctional("SVWN", restricted=True)[0]
-        Vpot = psi4.core.VBase.build(self.eng.basis, functional, "RV")
+        functional = self.psi4.driver.dft.build_superfunctional("SVWN", restricted=True)[0]
+        Vpot = self.psi4.core.VBase.build(self.eng.basis, functional, "RV")
         Vpot.initialize()
         Vpot.properties()[0].set_pointers(self.eng.wfn.Da())
 
 
         # Preparing for WF properties
         if self.eng.wfn.name() == "CIWavefunction":
-            if not (psi4.core.get_global_option("opdm") and psi4.core.get_global_option("tpdm")):
+            if not (self.psi4.core.get_global_option("opdm") and self.psi4.core.get_global_option("tpdm")):
                 raise ValueError("For CIWavefunction as input, make sure to turn on opdm and tpdm.")
             # TPDM & ERI Memory check
             nbf = self.nbf
@@ -279,7 +281,7 @@ class MRKS():
             numpy_memory = 2
             memory_footprint = I_size * 1.5
             if I_size > numpy_memory:
-                psi4.core.clean()
+                self.psi4.core.clean()
                 raise Exception("Estimated memory utilization (%4.2f GB) exceeds allotted memory \
                                             limit of %4.2f GB." % (memory_footprint, numpy_memory))
             else:
@@ -291,7 +293,7 @@ class MRKS():
 
             Ca = self.eng.wfn.Ca().np
 
-            mints = psi4.core.MintsHelper(self.eng.basis)
+            mints = self.psi4.core.MintsHelper(self.eng.basis)
 
             Ca_psi4 = psi4.core.Matrix.from_array(Ca)
             I = mints.mo_eri(Ca_psi4, Ca_psi4, Ca_psi4, Ca_psi4).np
@@ -306,11 +308,11 @@ class MRKS():
 
             del mints, I
 
-            C_a_GFM = psi4.core.Matrix(nbf, nbf)
-            eigs_a_GFM = psi4.core.Vector(nbf)
-            psi4.core.Matrix.from_array(F_GFM).diagonalize(C_a_GFM,
+            C_a_GFM = self.psi4.core.Matrix(nbf, nbf)
+            eigs_a_GFM = self.psi4.core.Vector(nbf)
+            self.psi4.core.Matrix.from_array(F_GFM).diagonalize(C_a_GFM,
                                                            eigs_a_GFM,
-                                                           psi4.core.DiagonalizeOrder.Ascending)
+                                                           self.psi4.core.DiagonalizeOrder.Ascending)
 
             eigs_a_GFM = eigs_a_GFM.np / 2.0  # RHF
             C_a_GFM = C_a_GFM.np
@@ -318,9 +320,9 @@ class MRKS():
             C_a_GFM = Ca @ C_a_GFM
 
             # Solving for Natural Orbitals (NO) 
-            C_a_NO = psi4.core.Matrix(nbf, nbf)
-            eigs_a_NO = psi4.core.Vector(nbf)
-            psi4.core.Matrix.from_array(opdm).diagonalize(C_a_NO, eigs_a_NO, psi4.core.DiagonalizeOrder.Descending)
+            C_a_NO = self.psi4.core.Matrix(nbf, nbf)
+            eigs_a_NO = self.psi4.core.Vector(nbf)
+            self.psi4.core.Matrix.from_array(opdm).diagonalize(C_a_NO, eigs_a_NO, self.psi4.core.DiagonalizeOrder.Descending)
             eigs_a_NO = eigs_a_NO.np / 2.0  # RHF
             C_a_NO = C_a_NO.np
             C_a_NO = Ca @ C_a_NO
@@ -349,7 +351,7 @@ class MRKS():
         elif init.lower()=="continue":
             pass
         else:
-            wfn_temp = psi4.energy(init+"/" + self.eng.basis_str, molecule=self.eng.mol, return_wfn=True)[1]
+            wfn_temp = self.psi4.energy(init+"/" + self.eng.basis_str, molecule=self.eng.mol, return_wfn=True)[1]
             self.Da = np.array(wfn_temp.Da())
             self.Coca = np.array(wfn_temp.Ca())[:, :Nalpha]
             self.eigvecs_a = np.array(wfn_temp.epsilon_a())

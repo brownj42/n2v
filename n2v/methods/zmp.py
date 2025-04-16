@@ -5,8 +5,8 @@ Functions associated with zmp inversion
 """
 
 
-import psi4
-psi4.core.be_quiet()
+#import psi4
+#psi4.core.be_quiet()
 import numpy as np
 from functools import reduce
 
@@ -25,7 +25,7 @@ class ZMP():
     """
     def zmp(self, 
             opt_max_iter=100, 
-            opt_tol= psi4.core.get_option("SCF", "D_CONVERGENCE"), 
+            opt_tol= 1.e-12, #psi4.core.get_option("SCF", "D_CONVERGENCE"), 
             lambda_list=[70],
             zmp_mixing = 1,
             print_scf = False, 

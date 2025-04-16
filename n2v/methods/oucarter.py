@@ -5,13 +5,15 @@ Functions associated with Ou-Carter inversion
 """
 
 import numpy as np
-import psi4
 
 class OC():
     """
     Ou-Carter density to potential inversion [1].
     [1] [J. Chem. Theory Comput. 2018, 14, 5680−5689]
     """
+    def __init__():
+        import psi4
+        self.psi4 = psi4
 
     def _get_optimized_external_potential(self, grid_info, average_alpha_beta=False):
         """
@@ -27,7 +29,7 @@ class OC():
         Nbeta = self.nbeta
 
         # SVWN calculation
-        wfn_LDA = psi4.energy("SVWN/" + self.eng.basis_str, molecule=self.eng.mol, return_wfn=True)[1]
+        wfn_LDA = self.psi4.energy("SVWN/" + self.eng.basis_str, molecule=self.eng.mol, return_wfn=True)[1]
         Da_LDA = wfn_LDA.Da().np
         Db_LDA = wfn_LDA.Db().np
         Ca_LDA = wfn_LDA.Ca().np
@@ -178,7 +180,7 @@ class OC():
         elif init.lower()=="continue":
             pass
         else:
-            wfn_temp = psi4.energy(init+"/" + self.eng.grid.basis_str, 
+            wfn_temp = self.psi4.energy(init+"/" + self.eng.grid.basis_str, 
                                    molecule=self.eng.grid.mol, 
                                    return_wfn=True)[1]
             self.Da = np.array(wfn_temp.Da())

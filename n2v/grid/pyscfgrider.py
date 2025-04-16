@@ -116,8 +116,8 @@ if has_pyscf:
             # zmin, zmax = np.min(self.atomic_coords[:,2])+3, np.max(self.atomic_coords[:,0])+3
             
             g1 = np.linspace(-10, 10, npoints[0])
-            g2 = np.linspace(0, 0, npoints[1])
-            g3 = np.linspace(0, 0, npoints[2])
+            g2 = np.linspace(-10, 10, npoints[1]) if npoints[1] > 1 else np.linspace(0, 0, 1)
+            g3 = np.linspace(-10, 10, npoints[2]) if npoints[2] > 1 else np.linspace(0, 0, 1)
             gx, gy, gz = np.meshgrid(g1, g2, g3)
             g3d = np.vstack( [gx.ravel(), gy.ravel(), gz.ravel()] ).T
 

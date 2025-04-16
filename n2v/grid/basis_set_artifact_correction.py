@@ -4,7 +4,6 @@ Basis Set Artifact Correction.
 
 import numpy as np
 from warnings import warn
-import psi4
 
 def invert_kohn_sham_equations(self, wfn, grid):
     """
@@ -120,7 +119,7 @@ def basis_set_correction(self, grid):
         Oscillatory profile that corrects inverted potentials. 
         Equation (5)
     """
-    
+    import psi4 
     #Make a calculation with LDA.
     _, correction_wfn = psi4.energy("svwn/"+self.eng.basis_str, return_wfn=True, molecule=self.eng.mol)
     
